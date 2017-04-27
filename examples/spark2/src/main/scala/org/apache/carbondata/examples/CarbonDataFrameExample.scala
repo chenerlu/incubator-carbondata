@@ -84,6 +84,8 @@ object CarbonDataFrameExample {
     carbondf.filter($"number" > 31).show()
 
     spark.sql("DROP TABLE IF EXISTS carbon_table")
+
+    spark.stop()
   }
 }
 // scalastyle:on println

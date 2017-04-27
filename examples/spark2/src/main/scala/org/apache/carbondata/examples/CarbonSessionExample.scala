@@ -133,6 +133,8 @@ object CarbonSessionExample {
 
     // Drop table
     spark.sql("DROP TABLE IF EXISTS carbon_table")
+
+    spark.stop()
   }
 
 }

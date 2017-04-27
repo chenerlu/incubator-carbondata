@@ -24,6 +24,10 @@ import org.apache.carbondata.core.util.CarbonProperties
 import org.apache.spark.sql.SparkSession
 
 
+/**
+ * For alter table relative syntax, you can refer to DDL operation
+ * (ddl-operation-on-carbondata.md)
+ */
 object AlterTableExample {
 
   def main(args: Array[String]): Unit = {
@@ -92,6 +96,8 @@ object AlterTableExample {
 
     spark.sql("DROP TABLE IF EXISTS carbon_table")
     spark.sql("DROP TABLE IF EXISTS new_carbon_table")
+
+    spark.stop()
 
   }
 }

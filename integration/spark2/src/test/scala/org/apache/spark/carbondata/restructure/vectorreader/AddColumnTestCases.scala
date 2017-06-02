@@ -37,7 +37,7 @@ class AddColumnTestCases extends QueryTest with BeforeAndAfterAll {
         s"options('FILEHEADER'='intField,stringField,timestampField,decimalField')")
     sql(
       "Alter table addcolumntest add columns(charField string) TBLPROPERTIES" +
-      "('DICTIONARY_EXCLUDE'='charField', 'DEFAULT.VALUE.charfield'='def')")
+      "('DICTIONARY_INCLUDE'='charField', 'DEFAULT.VALUE.charfield'='def')")
     sql(s"LOAD DATA LOCAL INPATH '$resourcesPath/restructure/data1.csv' INTO TABLE addcolumntest " +
         s"options('FILEHEADER'='intField,stringField,charField,timestampField,decimalField')")
   }
@@ -70,9 +70,9 @@ class AddColumnTestCases extends QueryTest with BeforeAndAfterAll {
 
   test("test add msr column and check aggregate") {
     sql(
-      "alter table addcolumntest add columns(msrField decimal(5,2))TBLPROPERTIES ('DEFAULT.VALUE" +
-      ".msrfield'= '123.45')")
-    checkAnswer(sql("select sum(msrField) from addcolumntest"),
+      "alter table addcolumntest add columns(msrField double)TBLPROPERTIES (" +
+      "'DICTIONARY_INCLUDE'='msrField', 'DEFAULT.VALUE.msrField'= '123.45')")
+    checkAnswer(sql("select sum(msrField) from addcolumntest group by msrField"),
       Row(new BigDecimal("246.90").setScale(2, RoundingMode.HALF_UP)))
   }
 
@@ -134,7 +134,7 @@ class AddColumnTestCases extends QueryTest with BeforeAndAfterAll {
         s"options('FILEHEADER'='intField,stringField,charField,timestampField,decimalField')")
     sql(
       "Alter table carbon_new add columns(newField string) TBLPROPERTIES" +
-      "('DICTIONARY_EXCLUDE'='newField','DEFAULT.VALUE.newField'='def')")
+      "('DICTIONARY_INCLUDE'='newField','DEFAULT.VALUE.newField'='def')")
     checkAnswer(sql("select * from carbon_new limit 1"),
       Row(new Integer(100),
         "spark",
@@ -172,7 +172,7 @@ class AddColumnTestCases extends QueryTest with BeforeAndAfterAll {
         s"options('FILEHEADER'='intField,stringField,charField,timestampField,decimalField')")
     sql(
       "Alter table carbon_new add columns(newField string) TBLPROPERTIES" +
-      "('DICTIONARY_EXCLUDE'='newField','DEFAULT.VALUE.newField'='def')")
+      "('DICTIONARY_INCLUDE'='newField','DEFAULT.VALUE.newField'='def')")
     checkAnswer(sql(
       "select intField,stringField,charField,newField,timestampField,decimalField from " +
       "carbon_new limit 1"), Row(new Integer(100),
@@ -198,6 +198,7 @@ class AddColumnTestCases extends QueryTest with BeforeAndAfterAll {
         "'FILEHEADER'='CUST_ID,CUST_NAME,ACTIVE_EMUI_VERSION,DOB,DOJ,BIGINT_COLUMN1," +
         "BIGINT_COLUMN2,DECIMAL_COLUMN1,DECIMAL_COLUMN2,Double_COLUMN1,Double_COLUMN2," +
         "INTEGER_COLUMN1')")
+
     sql(
       """alter table carbon_new add columns(CUST_NAME string) TBLPROPERTIES
         ('DICTIONARY_EXCLUDE'='CUST_NAME', 'DEFAULT.VALUE.CUST_NAME'='testuser')""")
@@ -262,8 +263,8 @@ class AddColumnTestCases extends QueryTest with BeforeAndAfterAll {
     sql(s"LOAD DATA LOCAL INPATH '$resourcesPath/restructure/data1.csv' INTO TABLE carbon_table options('FILEHEADER'='intField,stringField,charField,timestampField,decimalField')")
     sql(
       "Alter table carbon_table add columns(newField decimal(5,2)) TBLPROPERTIES" +
-      "('DEFAULT.VALUE.newField'='21.87')")
-    checkAnswer(sql("select distinct(newField) from carbon_table"), Row(21.87))
+      "('DEFAULT.VALUE.newField'='00.00')")
+    checkAnswer(sql("select distinct(newField) from carbon_table"), Row(0.00))
     sql("DROP TABLE IF EXISTS carbon_table")
   }
 

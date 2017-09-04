@@ -833,8 +833,7 @@ abstract class CarbonDDLSqlParser extends AbstractCarbonSparkSQLParser {
       "COMPLEX_DELIMITER_LEVEL_1", "COMPLEX_DELIMITER_LEVEL_2", "COLUMNDICT",
       "SERIALIZATION_NULL_FORMAT", "BAD_RECORDS_LOGGER_ENABLE", "BAD_RECORDS_ACTION",
       "ALL_DICTIONARY_PATH", "MAXCOLUMNS", "COMMENTCHAR", "DATEFORMAT", "BAD_RECORD_PATH",
-      "SINGLE_PASS", "IS_EMPTY_DATA_BAD_RECORD", "SORT_SCOPE", "BATCH_SORT_SIZE_INMB",
-      "GLOBAL_SORT_PARTITIONS", "HEADER"
+      "SINGLE_PASS", "IS_EMPTY_DATA_BAD_RECORD", "HEADER"
     )
     var isSupported = true
     val invalidOptions = StringBuilder.newBuilder
@@ -889,13 +888,13 @@ abstract class CarbonDDLSqlParser extends AbstractCarbonSparkSQLParser {
       }
     }
 
-    if (options.exists(_._1.equalsIgnoreCase("SORT_SCOPE"))) {
-      val optionValue: String = options.get("sort_scope").get.head._2
-      if (!SortScopeOptions.isValidSortOption(optionValue)) {
-        throw new MalformedCarbonCommandException(
-          "option SORT_SCOPE can have option either BATCH_SORT or LOCAL_SORT or GLOBAL_SORT")
-      }
-    }
+//    if (options.exists(_._1.equalsIgnoreCase("SORT_SCOPE"))) {
+//      val optionValue: String = options.get("sort_scope").get.head._2
+//      if (!SortScopeOptions.isValidSortOption(optionValue)) {
+//        throw new MalformedCarbonCommandException(
+//          "option SORT_SCOPE can have option either BATCH_SORT or LOCAL_SORT or GLOBAL_SORT")
+//      }
+//    }
 
     // check for duplicate options
     val duplicateOptions = options filter {

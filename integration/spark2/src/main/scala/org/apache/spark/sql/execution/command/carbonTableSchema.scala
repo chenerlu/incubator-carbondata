@@ -556,21 +556,21 @@ case class LoadTable(
       carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_DATEFORMAT,
         CarbonLoadOptionConstants.CARBON_OPTIONS_DATEFORMAT_DEFAULT)))
 
-    optionsFinal.put("global_sort_partitions", options.getOrElse("global_sort_partitions",
-      carbonProperty
-        .getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_GLOBAL_SORT_PARTITIONS, null)))
+//    optionsFinal.put("global_sort_partitions", options.getOrElse("global_sort_partitions",
+//      carbonProperty
+//        .getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_GLOBAL_SORT_PARTITIONS, null)))
 
     optionsFinal.put("maxcolumns", options.getOrElse("maxcolumns", null))
-    optionsFinal.put("sort_scope", options
-      .getOrElse("sort_scope",
-        carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_SORT_SCOPE,
-          carbonProperty.getProperty(CarbonCommonConstants.LOAD_SORT_SCOPE,
-            CarbonCommonConstants.LOAD_SORT_SCOPE_DEFAULT))))
+//    optionsFinal.put("sort_scope", options
+//      .getOrElse("sort_scope",
+//        carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_SORT_SCOPE,
+//          carbonProperty.getProperty(CarbonCommonConstants.LOAD_SORT_SCOPE,
+//            CarbonCommonConstants.LOAD_SORT_SCOPE_DEFAULT))))
 
-    optionsFinal.put("batch_sort_size_inmb", options.getOrElse("batch_sort_size_inmb",
-      carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_BATCH_SORT_SIZE_INMB,
-        carbonProperty.getProperty(CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB,
-          CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB_DEFAULT))))
+//    optionsFinal.put("batch_sort_size_inmb", options.getOrElse("batch_sort_size_inmb",
+//      carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_BATCH_SORT_SIZE_INMB,
+//        carbonProperty.getProperty(CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB,
+//          CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB_DEFAULT))))
     optionsFinal.put("bad_record_path", options.getOrElse("bad_record_path",
       carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_BAD_RECORD_PATH,
         carbonProperty.getProperty(CarbonCommonConstants.CARBON_BADRECORDS_LOC,
@@ -639,6 +639,23 @@ case class LoadTable(
     val carbonProperty: CarbonProperties = CarbonProperties.getInstance()
     carbonProperty.addProperty("zookeeper.enable.lock", "false")
     val optionsFinal = getFinalOptions(carbonProperty)
+    val tableProperties = relation.tableMeta.carbonTable.getTableInfo
+      .getFactTable.getTableProperties
+
+    optionsFinal.put("sort_scope", tableProperties.getOrDefault("sort_scope",
+        carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_SORT_SCOPE,
+          carbonProperty.getProperty(CarbonCommonConstants.LOAD_SORT_SCOPE,
+            CarbonCommonConstants.LOAD_SORT_SCOPE_DEFAULT))))
+
+    optionsFinal.put("batch_sort_size_inmb", tableProperties.getOrDefault("batch_sort_size_inmb",
+      carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_BATCH_SORT_SIZE_INMB,
+        carbonProperty.getProperty(CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB,
+          CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB_DEFAULT))))
+
+    optionsFinal.put("global_sort_partitions", tableProperties.getOrDefault("global_sort_partitions",
+      carbonProperty
+        .getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_GLOBAL_SORT_PARTITIONS, null)))
+
     try {
       val factPath = if (dataFrame.isDefined) {
         ""

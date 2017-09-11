@@ -888,14 +888,6 @@ abstract class CarbonDDLSqlParser extends AbstractCarbonSparkSQLParser {
       }
     }
 
-//    if (options.exists(_._1.equalsIgnoreCase("SORT_SCOPE"))) {
-//      val optionValue: String = options.get("sort_scope").get.head._2
-//      if (!SortScopeOptions.isValidSortOption(optionValue)) {
-//        throw new MalformedCarbonCommandException(
-//          "option SORT_SCOPE can have option either BATCH_SORT or LOCAL_SORT or GLOBAL_SORT")
-//      }
-//    }
-
     // check for duplicate options
     val duplicateOptions = options filter {
       case (_, optionlist) => optionlist.size > 1

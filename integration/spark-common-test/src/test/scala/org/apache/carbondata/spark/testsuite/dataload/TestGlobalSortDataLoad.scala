@@ -118,7 +118,7 @@ class TestGlobalSortDataLoad extends QueryTest with BeforeAndAfterEach with Befo
   }
 
   // ----------------------------------- Configuration Validity -----------------------------------
-  ignore("Don't support GLOBAL_SORT on partitioned table") {
+  test("Don't support GLOBAL_SORT on partitioned table") {
     sql("DROP TABLE IF EXISTS carbon_globalsort_partitioned")
     sql(
       """

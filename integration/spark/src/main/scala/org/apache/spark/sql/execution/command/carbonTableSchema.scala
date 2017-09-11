@@ -172,6 +172,13 @@ case class CreateTable(cm: TableModel) extends RunnableCommand {
 
     val tableInfo: TableInfo = TableNewProcessor(cm)
 
+    // Add validation for sort scope when create table
+    val sortScope = tableInfo.getFactTable.getTableProperties.get("sort_scope")
+    if (null != sortScope && !CarbonUtil.isValidSortOption(sortScope)) {
+      throw new InvalidConfigurationException("The sort scope " + sortScope
+        + " can have only either BATCH_SORT or LOCAL_SORT or NO_SORT or GLOBAL_SORT.")
+    }
+
     if (tableInfo.getFactTable.getListOfColumns.isEmpty) {
       sys.error("No Dimensions found. Table should have at least one dimesnion !")
     }
@@ -432,7 +439,8 @@ case class LoadTable(
       val dateFormat = options.getOrElse("dateformat", null)
       ValidateUtil.validateDateFormat(dateFormat, table, tableName)
       val maxColumns = options.getOrElse("maxcolumns", null)
-      val sortScope = options.getOrElse("sort_scope", null)
+      val tableProperties = relation.tableMeta.carbonTable.getTableInfo
+        .getFactTable.getTableProperties.getOrDefault("sort_scope",null)
       ValidateUtil.validateSortScope(table, sortScope)
       val batchSortSizeInMB = options.getOrElse("batch_sort_size_inmb", null)
       val globalSortPartitions = options.getOrElse("global_sort_partitions", null)
@@ -874,6 +882,8 @@ private[sql] case class DescribeCommandFormatted(
     results ++= Seq(("CARBON Store Path: ", relation.tableMeta.storePath, ""))
     val carbonTable = relation.tableMeta.carbonTable
     results ++= Seq(("Table Block Size : ", carbonTable.getBlockSizeInMB + " MB", ""))
+    results ++= Seq(("SORT_SCOPE", carbonTable.getTableInfo.getFactTable
+      .getTableProperties.getOrDefault("sort_scope", ""), ""))
     results ++= Seq(("", "", ""), ("##Detailed Column property", "", ""))
     if (colPropStr.length() > 0) {
       results ++= Seq((colPropStr, "", ""))

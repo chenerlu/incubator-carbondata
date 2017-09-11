@@ -78,10 +78,11 @@ class TestGlobalSortDataLoad extends QueryTest with BeforeAndAfterEach with Befo
       """
         | CREATE TABLE carbon_globalsort1(id INT, name STRING, city STRING, age INT)
         | STORED BY 'org.apache.carbondata.format'
-        | TBLPROPERTIES('SORT_SCOPE'='GLOBAL_SORT', 'GLOBAL_SORT_PARTITIONS'='1')
+        | TBLPROPERTIES('SORT_SCOPE'='GLOBAL_SORT')
       """.stripMargin)
 
-    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort1")
+    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort1 " +
+      "OPTIONS('GLOBAL_SORT_PARTITIONS'='1')")
 
     assert(getIndexFileCount("carbon_globalsort1") === 1)
     checkAnswer(sql("SELECT COUNT(*) FROM carbon_globalsort1"), Seq(Row(12)))
@@ -133,15 +134,15 @@ class TestGlobalSortDataLoad extends QueryTest with BeforeAndAfterEach with Befo
     }
   }
 
-  ignore("Number of partitions should be greater than 0") {
+  test("Number of partitions should be greater than 0") {
     intercept[MalformedCarbonCommandException] {
       sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort " +
-        "OPTIONS('SORT_SCOPE'='GLOBAL_SORT', 'GLOBAL_SORT_PARTITIONS'='0')")
+        "OPTIONS('GLOBAL_SORT_PARTITIONS'='0')")
     }
 
     intercept[MalformedCarbonCommandException] {
       sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort " +
-        "OPTIONS('SORT_SCOPE'='GLOBAL_SORT', 'GLOBAL_SORT_PARTITIONS'='a')")
+        "OPTIONS('GLOBAL_SORT_PARTITIONS'='a')")
     }
   }
 
@@ -166,31 +167,6 @@ class TestGlobalSortDataLoad extends QueryTest with BeforeAndAfterEach with Befo
       sql("SELECT * FROM carbon_localsort_twice ORDER BY name"))
   }
 
-  ignore("Compaction GLOBAL_SORT + LOCAL_SORT + BATCH_SORT") {
-    sql("DROP TABLE IF EXISTS carbon_localsort_triple")
-    sql(
-      """
-        | CREATE TABLE carbon_localsort_triple(id INT, name STRING, city STRING, age INT)
-        | STORED BY 'org.apache.carbondata.format'
-      """.stripMargin)
-    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_localsort_triple")
-    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_localsort_triple")
-    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_localsort_triple")
-
-    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort " +
-      s"OPTIONS('SORT_SCOPE'='GLOBAL_SORT')")
-    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort " +
-      s"OPTIONS('SORT_SCOPE'='LOCAL_SORT')")
-    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort " +
-      s"OPTIONS('SORT_SCOPE'='BATCH_SORT', 'BATCH_SORT_SIZE_INMB'='1')")
-    sql("ALTER TABLE carbon_globalsort COMPACT 'MAJOR'")
-
-    assert(getIndexFileCount("carbon_globalsort") === 3)
-    checkAnswer(sql("SELECT COUNT(*) FROM carbon_globalsort"), Seq(Row(36)))
-    checkAnswer(sql("SELECT * FROM carbon_globalsort ORDER BY name"),
-      sql("SELECT * FROM carbon_localsort_triple ORDER BY name"))
-  }
-
   // ----------------------------------- Check Configurations -----------------------------------
   // Waiting for merge SET feature[CARBONDATA-1065]
   ignore("DDL > SET") {
@@ -205,17 +181,10 @@ class TestGlobalSortDataLoad extends QueryTest with BeforeAndAfterEach with Befo
   test("DDL > carbon.properties") {
     CarbonProperties.getInstance().addProperty(CarbonCommonConstants.LOAD_SORT_SCOPE, "LOCAL_SORT")
     CarbonProperties.getInstance().addProperty(CarbonCommonConstants.LOAD_GLOBAL_SORT_PARTITIONS, "5")
-    sql("DROP TABLE IF EXISTS carbon_globalsort2")
-    sql(
-      """
-        | CREATE TABLE carbon_globalsort2(id INT, name STRING, city STRING, age INT)
-        | STORED BY 'org.apache.carbondata.format'
-        | TBLPROPERTIES('SORT_SCOPE'='GLOBAL_SORT', 'GLOBAL_SORT_PARTITIONS'='2')
-      """.stripMargin)
+    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort " +
+        "OPTIONS('GLOBAL_SORT_PARTITIONS'='2')")
 
-    sql(s"LOAD DATA LOCAL INPATH '$filePath' INTO TABLE carbon_globalsort2")
-
-    assert(getIndexFileCount("carbon_globalsort2") === 2)
+    assert(getIndexFileCount("carbon_globalsort") === 2)
   }
 
   // Waiting for merge SET feature[CARBONDATA-1065]

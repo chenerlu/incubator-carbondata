@@ -43,6 +43,7 @@ import org.apache.carbondata.core.cache.CacheProvider
 import org.apache.carbondata.core.constants.{CarbonCommonConstants, CarbonLoadOptionConstants}
 import org.apache.carbondata.core.datastore.impl.FileFactory
 import org.apache.carbondata.core.dictionary.server.DictionaryServer
+import org.apache.carbondata.core.exception.InvalidConfigurationException
 import org.apache.carbondata.core.locks.{CarbonLockUtil, ICarbonLock, LockUsage}
 import org.apache.carbondata.core.metadata.{AbsoluteTableIdentifier, CarbonMetadata, CarbonTableIdentifier}
 import org.apache.carbondata.core.metadata.converter.ThriftWrapperSchemaConverterImpl
@@ -344,6 +345,13 @@ case class CreateTable(cm: TableModel, createDSTable: Boolean = true) extends Ru
 
     val tableInfo: TableInfo = TableNewProcessor(cm)
 
+    // Add validation for sort scope when create table
+    val sortScope = tableInfo.getFactTable.getTableProperties.get("sort_scope")
+    if (null != sortScope && !CarbonUtil.isValidSortOption(sortScope)) {
+      throw new InvalidConfigurationException("The sort scope " + sortScope
+        + " can have only either BATCH_SORT or LOCAL_SORT or NO_SORT or GLOBAL_SORT.")
+    }
+
     if (tableInfo.getFactTable.getListOfColumns.size <= 0) {
       sys.error("No Dimensions found. Table should have at least one dimesnion !")
     }
@@ -556,7 +564,16 @@ case class LoadTable(
       carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_DATEFORMAT,
         CarbonLoadOptionConstants.CARBON_OPTIONS_DATEFORMAT_DEFAULT)))
 
+    optionsFinal.put("global_sort_partitions", options.getOrElse("global_sort_partitions",
+      carbonProperty
+        .getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_GLOBAL_SORT_PARTITIONS, null)))
+
     optionsFinal.put("maxcolumns", options.getOrElse("maxcolumns", null))
+
+    optionsFinal.put("batch_sort_size_inmb", options.getOrElse("batch_sort_size_inmb",
+      carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_BATCH_SORT_SIZE_INMB,
+        carbonProperty.getProperty(CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB,
+          CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB_DEFAULT))))
 
     optionsFinal.put("bad_record_path", options.getOrElse("bad_record_path",
       carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_BAD_RECORD_PATH,
@@ -626,6 +643,7 @@ case class LoadTable(
     val carbonProperty: CarbonProperties = CarbonProperties.getInstance()
     carbonProperty.addProperty("zookeeper.enable.lock", "false")
     val optionsFinal = getFinalOptions(carbonProperty)
+
     val tableProperties = relation.tableMeta.carbonTable.getTableInfo
       .getFactTable.getTableProperties
 
@@ -633,15 +651,6 @@ case class LoadTable(
         carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_SORT_SCOPE,
           carbonProperty.getProperty(CarbonCommonConstants.LOAD_SORT_SCOPE,
             CarbonCommonConstants.LOAD_SORT_SCOPE_DEFAULT))))
-
-    optionsFinal.put("batch_sort_size_inmb", tableProperties.getOrDefault("batch_sort_size_inmb",
-      carbonProperty.getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_BATCH_SORT_SIZE_INMB,
-        carbonProperty.getProperty(CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB,
-          CarbonCommonConstants.LOAD_BATCH_SORT_SIZE_INMB_DEFAULT))))
-
-    optionsFinal.put("global_sort_partitions", tableProperties.getOrDefault("global_sort_partitions",
-      carbonProperty
-        .getProperty(CarbonLoadOptionConstants.CARBON_OPTIONS_GLOBAL_SORT_PARTITIONS, null)))
 
     try {
       val factPath = if (dataFrame.isDefined) {
@@ -679,7 +688,6 @@ case class LoadTable(
       val column_dict = optionsFinal("columndict")
       ValidateUtil.validateDateFormat(dateFormat, table, tableName)
       ValidateUtil.validateSortScope(table, sort_scope)
-
 
       if (bad_records_logger_enable.toBoolean ||
           LoggerAction.REDIRECT.name().equalsIgnoreCase(bad_records_action)) {
@@ -1134,6 +1142,8 @@ private[sql] case class DescribeCommandFormatted(
     results ++= Seq(("CARBON Store Path: ", relation.tableMeta.storePath, ""))
     val carbonTable = relation.tableMeta.carbonTable
     results ++= Seq(("Table Block Size : ", carbonTable.getBlockSizeInMB + " MB", ""))
+    results ++= Seq(("SORT_SCOPE", carbonTable.getTableInfo.getFactTable
+      .getTableProperties.getOrDefault("sort_scope", ""), ""))
     results ++= Seq(("", "", ""), ("##Detailed Column property", "", ""))
     if (colPropStr.length() > 0) {
       results ++= Seq((colPropStr, "", ""))

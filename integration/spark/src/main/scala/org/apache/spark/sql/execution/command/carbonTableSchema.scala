@@ -440,7 +440,7 @@ case class LoadTable(
       ValidateUtil.validateDateFormat(dateFormat, table, tableName)
       val maxColumns = options.getOrElse("maxcolumns", null)
       val tableProperties = relation.tableMeta.carbonTable.getTableInfo
-        .getFactTable.getTableProperties.getOrDefault("sort_scope",null)
+        .getFactTable.getTableProperties.getOrDefault("sort_scope", null)
       ValidateUtil.validateSortScope(table, sortScope)
       val batchSortSizeInMB = options.getOrElse("batch_sort_size_inmb", null)
       val globalSortPartitions = options.getOrElse("global_sort_partitions", null)

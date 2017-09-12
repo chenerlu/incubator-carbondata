@@ -38,15 +38,8 @@ class TestCreateTableWithSortScope extends QueryTest with BeforeAndAfterAll {
     sql(
       s"""
          | CREATE TABLE tableWithGlobalSort(
-         | shortField SHORT,
          | intField INT,
-         | longField LONG,
-         | doubleField DOUBLE,
-         | stringField STRING,
-         | timestampField TIMESTAMP,
-         | decimalField DECIMAL(18,2),
-         | dateField DATE,
-         | charField CHAR(5)
+         | stringField STRING
          | )
          | STORED BY 'carbondata'
          | TBLPROPERTIES('SORT_COLUMN'='stringField', 'SORT_SCOPE'='GLOBAL_SORT')
@@ -57,15 +50,8 @@ class TestCreateTableWithSortScope extends QueryTest with BeforeAndAfterAll {
     sql(
       s"""
          | CREATE TABLE tableWithLocalSort(
-         | shortField SHORT,
          | intField INT,
-         | longField LONG,
-         | doubleField DOUBLE,
-         | stringField STRING,
-         | timestampField TIMESTAMP,
-         | decimalField DECIMAL(18,2),
-         | dateField DATE,
-         | charField CHAR(5)
+         | stringField STRING
          | )
          | STORED BY 'carbondata'
          | TBLPROPERTIES('SORT_COLUMN'='stringField', 'SORT_SCOPE'='LOCAL_SORT')
@@ -78,15 +64,8 @@ class TestCreateTableWithSortScope extends QueryTest with BeforeAndAfterAll {
     sql(
       s"""
          | CREATE TABLE tableWithBatchSort(
-         | shortField SHORT,
          | intField INT,
-         | longField LONG,
-         | doubleField DOUBLE,
-         | stringField STRING,
-         | timestampField TIMESTAMP,
-         | decimalField DECIMAL(18,2),
-         | dateField DATE,
-         | charField CHAR(5)
+         | stringField STRING
          | )
          | STORED BY 'carbondata'
          | TBLPROPERTIES('SORT_COLUMN'='stringField', 'SORT_SCOPE'='BATCH_SORT')
@@ -97,15 +76,8 @@ class TestCreateTableWithSortScope extends QueryTest with BeforeAndAfterAll {
     sql(
       s"""
          | CREATE TABLE tableWithNoSort(
-         | shortField SHORT,
          | intField INT,
-         | longField LONG,
-         | doubleField DOUBLE,
-         | stringField STRING,
-         | timestampField TIMESTAMP,
-         | decimalField DECIMAL(18,2),
-         | dateField DATE,
-         | charField CHAR(5)
+         | stringField STRING
          | )
          | STORED BY 'carbondata'
          | TBLPROPERTIES('SORT_COLUMN'='stringField', 'SORT_SCOPE'='NO_SORT')
@@ -119,15 +91,8 @@ class TestCreateTableWithSortScope extends QueryTest with BeforeAndAfterAll {
       sql(
         s"""
            | CREATE TABLE tableWithUnsupportSortScope(
-           | shortField SHORT,
            | intField INT,
-           | longField LONG,
-           | doubleField DOUBLE,
-           | stringField STRING,
-           | timestampField TIMESTAMP,
-           | decimalField DECIMAL(18,2),
-           | dateField DATE,
-           | charField CHAR(5)
+           | stringField STRING
            | )
            | STORED BY 'carbondata'
            | TBLPROPERTIES('SORT_COLUMN'='stringField', 'SORT_SCOPE'='abc')

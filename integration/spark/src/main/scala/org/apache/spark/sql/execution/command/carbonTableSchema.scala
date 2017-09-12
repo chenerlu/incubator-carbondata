@@ -42,6 +42,7 @@ import org.apache.carbondata.common.logging.LogServiceFactory
 import org.apache.carbondata.core.constants.CarbonCommonConstants
 import org.apache.carbondata.core.datastore.impl.FileFactory
 import org.apache.carbondata.core.dictionary.server.DictionaryServer
+import org.apache.carbondata.core.exception.InvalidConfigurationException
 import org.apache.carbondata.core.locks.{CarbonLockFactory, CarbonLockUtil, ICarbonLock, LockUsage}
 import org.apache.carbondata.core.metadata.{CarbonMetadata, CarbonTableIdentifier}
 import org.apache.carbondata.core.metadata.encoder.Encoding
@@ -439,7 +440,7 @@ case class LoadTable(
       val dateFormat = options.getOrElse("dateformat", null)
       ValidateUtil.validateDateFormat(dateFormat, table, tableName)
       val maxColumns = options.getOrElse("maxcolumns", null)
-      val tableProperties = relation.tableMeta.carbonTable.getTableInfo
+      val sortScope = relation.tableMeta.carbonTable.getTableInfo
         .getFactTable.getTableProperties.getOrDefault("sort_scope", null)
       ValidateUtil.validateSortScope(table, sortScope)
       val batchSortSizeInMB = options.getOrElse("batch_sort_size_inmb", null)
